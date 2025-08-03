@@ -1,0 +1,1 @@
+# Configs like skin names, thresholds, intervals
