@@ -3,36 +3,56 @@
 # config.py
 
 # CS2 skins to monitor (grouped by weapon for readability)
-SKINS = {
-    "AKs": [
-        "AK-47 | Redline (Field-Tested)",
-        "AK-47 | Vulcan (Minimal Wear)"
+# skin_data.py
+
+skins = {
+    "AK-47": [
+        "Redline", "Vulcan", "Gold Arabesque", "Case Hardened","Inheritance","Fire Serpent",
+        "Asiimov", "Neon Revolution", "Frontside Misty", "Bloodsport",
+        "Hydroponic", "Blue Laminate", "Wasteland Rebel", "Cartel",
+        "Elite Build", "Point Disarray", "Phantom Disruptor", "The Empress",
+        "Nightwish", "Fuel Injector", "Head Shot", "B the Monster"
+
     ],
-    "AWPs": [
-        "AWP | Asiimov (Field-Tested)",
-        "AWP | Dragon Lore (Factory New)"
+    "AWP": [
+        "Asiimov", "Dragon Lore", "Graphite"
     ],
-    "M4A1s": [
-        "M4A1-S | Printstream (Factory New)",
+    "M4A1-S": [
+        "Printstream", "Hyper Beast"
     ],
-    "M4A4s": [
-        "M4A4 | Howl (Factory New)",
-        "M4A4 | The Emperor (Minimal Wear)"
+    "M4A4": [
+        "Howl", "The Emperor", "Temukau", "Desolate Space", "Neo-Noir", 
+        "Bullet Rain", "Royal Paladin", "Griffin", "The Battlestar",
+    ],
+    "USP-S": [
+        "Kill Confirmed", "Orion", "Neo-Noir", "Cyrex", "Printstream",
+        "Flashback", "Monster Mashup", "Cortex", "The Traitor",
+        "Jawbreaker", "Whiteout", "Dark Water", 
+    ],
+    "CASES": [
+        "Dreams & Nightmares Case", "Fracture Case", "Prisma 2 Case",
+        "Snakebite Case", "Danger Zone Case", "Revolver Case",
+        "Clutch Case", "Spectrum 2 Case", "Spectrum Case", "Chroma case",
+        "Chroma 2 Case", "Gamma 2 Case", "Gamma Case", 
+        "Horizon Case", "Falchion Case", "Operation Broken Fang Case",
+        "Operation Hydra Case", "Operation Wildfire Case", "Operation Phoenix Case",
+        "Operation Vanguard Case", "Operation Bravo Case", "Operation Riptide Case",
+        "Operation Shattered Web Case", "Operation Broken Fang Case"
+    ],
+    "KNIFE": [
+        "Bayonet", "Karambit", "M9 Bayonet", "Huntsman Knife",
+        "Butterfly Knife", "Falchion Knife", "Shadow Daggers",
+        "Bowie Knife", "Ursus Knife", "Navaja Knife", "Stiletto Knife",
+        "Talon Knife", "Paracord Knife", "Nomad Knife", "Survival Knife",
+        "Skeleton Knife", "Classic Knife"
+    ],
+    "GLOVES": [
+        "Sport Gloves", "Hand Wraps", "Hydra Gloves", "Specialist Gloves"
     ],
 }
 
-# Interval for price checks (in seconds)
-INTERVAL = 8 * 60 * 60  # 8 hours
+wears = [
+    "Factory New", "Minimal Wear", "Field-Tested",
+    "Well-Worn", "Battle-Scarred"
+]
 
-# Flat price alert thresholds — trigger if skin price drops below this
-ALERT_THRESHOLDS = {
-    "AWP | Asiimov (Field-Tested)": 40.00,
-    "AK-47 | Redline (Field-Tested)": 10.00
-}
-
-# Percentage drop alert (future use: track % drop compared to previous price)
-PRICE_DROP_PERCENT = 5.0  # Alert if drop exceeds 5%
-
-# Steam currency setting (1 = USD, 8 = SGD, etc.)
-# See: https://partner.steamgames.com/doc/store/pricing/currencies
-CURRENCY = 8  # 1 = USD, 8 = SGD
