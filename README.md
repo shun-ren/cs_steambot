@@ -1,94 +1,147 @@
-# cs_steambot
-PS C:\Users\fearl\OneDrive\Desktop\DIY\cs_steambot> python fetcher.py
+<p align="center">
+  <img src="assets/readme-hero.png" alt="Neon CS2 skin market dashboard" width="100%">
+</p>
 
-Follows the full scraping fallback sequence:
-1) Steam API
-2) Steam JavaScript scraping
-3) Steam HTML scraping
-4) Buff.163
-5) CSFloat
-- Prints clear and clean messages for each fallback step.
-- Hides unnecessary API debug prints.
-- Displays final price and SGD conversion.
+<h1 align="center">CS2 Skin Price Checker</h1>
 
-******************************
-skins that won't work due to rarity 
-    "M4A4 | Howl (Factory New)"
-    "AWP | Dragon Lore (Factory New)"
-    "AK-47 | Gold Arabesque (Factory New)"
+<p align="center">
+  A neon-styled CS2 price tool that understands natural language, shows its lookup progress, and never invents a price.
+</p>
 
-some key notes: 
-Why the Steam Market webpage always has prices, but API may not:
-    - The webpage dynamically loads data from various sources, including more recent listings, sales, and cached info.
-    - The API endpoint is a quick summary and can fail if listings are sparse, or the server limits API access.
-    - The market might have anti-scraping or API rate limits or restrictions that aren’t documented.
-Steam Market uses JavaScript to load the price and listings dynamically after page load.
--   requests fetches only the initial HTML (which lacks the price).
--   BeautifulSoup parses that HTML — no price data is found there.
+<p align="center">
+  <img src="https://img.shields.io/badge/Python-3.9%2B-3776AB?logo=python&logoColor=white" alt="Python 3.9+">
+  <img src="https://img.shields.io/badge/Flask-3.1-000000?logo=flask&logoColor=white" alt="Flask">
+  <img src="https://img.shields.io/badge/CS2-natural--language%20search-bb35d5" alt="Natural language search">
+  <img src="https://img.shields.io/badge/Price%20cards-source--verified-1fc9f3" alt="Source verified prices">
+</p>
 
-Added a mini user chatbot that interacts 
-downside is that have to manually enter the config file
-upgrade is that the moment the skin is added, no need add the wearity as it can auto search 
-- Glove and knife abit wonky
+---
 
-add visualisation graph and maybe predictability graph
-===================================================================================================
+## Overview
 
-import requests     #import requests library for making HTTP requests (permission to act as a client when webscraping)
+CS2 Skin Price Checker is a local Flask website for checking live CS2 marketplace prices. Instead of scrolling through a fixed dropdown, users type what they mean:
 
-import time     # import time library to have pauses between requests so as not to overload the server and not act as a bot
+```text
+ak neon rider ft
+ak stattrack neon rider ft
+karambit fade fn
+sport gloves vice ft
+```
 
-Re libary 
-Fuzzy input matching (e.g., user types ak47 redline instead of AK-47 | Redline):
-    - Use re.search() to find if user input contains certain keywords regardless of case, spacing, or punctuation.
-    - Text cleanup / normalization:
-    -Strip unwanted characters, spaces, or formats from scraped names.
-Validation:
-Check if input matches a valid format, e.g., AK-47 | <skin name>.
+The app resolves the request to one exact market name before checking prices. It supports standard weapon skins, valid StatTrak variants, knives, gloves, wear shortcuts, and minor spelling mistakes.
 
-import json # import json library to handle JSON data
-    - using it when we are trying to manipulate the JSON data 
-    - Parsing JSON responses from APIs.
-    - Saving scraped data (e.g., skin names) to .json (optional if you're using Python configs instead).
+<p align="center">
+  <img src="static/market-hero.png" alt="CS2 skin price checker neon theme" width="100%">
+</p>
 
-from bs4 import BeautifulSoup # import BeautifulSoup from bs4 for scraping HTML content
+## Key features
 
-import urllib.parse # import urllib.parse for URL encoding and decoding
+- Natural-language search instead of static item dropdowns
+- Supports weapons, valid StatTrak variants, knives, gloves, and wear conditions
+- Recognises common shortcuts: `fn`, `mw`, `ft`, `ww`, and `bs`
+- Shows a live loading bar and terminal-style progress feed
+- Checks sources in order: Steam, Skinport, 49Skins, then SkinCash
+- Shows each marketplace in its own card with its original price and currency
+- Adds a live SGD estimate beside USD and EUR listings when FX data is available
+- Shows selectable suggestions for unclear or invalid requests
+- Never shows a made-up, stale, or mismatched price
 
-def get_skin_price 
-> getting the prices from steam API
+## Lookup progress flow
 
-def scrape_skin_price_from_script 
-> scrapping for Javascript on the steam community website 
+When a user clicks **Check price**, the app makes the whole process visible instead of silently waiting.
 
-def scrape_skin_price_from_html
-> try scrapping for HTML on the steam community website 
+```mermaid
+flowchart TD
+    A[User enters a natural search] --> B[Load CS2 item catalog]
+    B --> C{One valid canonical item?}
+    C -- No --> D[Show suggestions only]
+    C -- Yes --> E[Display exact market name]
+    E --> F[1. Steam price summary in SGD]
+    F --> G[2. Skinport public USD catalog]
+    G --> H[3. 49Skins public EUR stock]
+    H --> I[4. SkinCash public USD feed]
+    I --> J[Show source-labelled cards and SGD estimates]
+```
 
-The reason why we try both javascript and html is because the webpage could be coded in either or 
+### What the terminal log means
 
-def scrape_buff_price
-> if failed, try scrapping from this website instead 
+| Progress message | Meaning |
+| --- | --- |
+| `CS2 item catalog is ready` | The bot can now validate the typed name, wear, and variant. |
+| `Matched exact market name` | A price lookup is safe because the input maps to one canonical CS2 item. |
+| `Steam did not respond in time` | Steam was not used as a price; this is not treated as a zero price. |
+| `No active listing` | The source is reachable, but that exact item has no current stock there. |
+| `returned an active listing price` | The source returned a structured price for the exact matched item. |
+| `No valid StatTrak version exists` | The standard item exists, but CS2 does not have that StatTrak variant. |
 
-def scrape_csfloat_price
-> if failed, try srapping from this website instead 
+## Price validation rules
 
-def get_usd_to_sgd_rate()
-> get the convertion rate from USD TO SGD 
+The app uses a simple safety-first tier system:
 
-def convert_usd_to_sgd
-> Convert to sgd with 2dp
+| Tier | Action | Result |
+| --- | --- | --- |
+| 1. Name validation | Compare the request against the public CS2 item catalog | No confident match means no price card |
+| 2. Exact source check | Request structured marketplace data using the canonical name | Only exact active listings can show a price |
+| 3. Currency handling | Keep the marketplace currency and calculate a separately labelled SGD estimate | Prices are never silently merged or relabelled |
+| 4. Manual verification | Provide a direct marketplace link on every card | Users can inspect the live listing themselves |
 
-    from rapidfuzz import process  # Fuzzy matching library for better user input handling 
-    from config import skins, wears  # Import the skins and wears configuration from the config module
-    from difflib import get_close_matches  # Import get_close_matches for fuzzy matching user input
+This prevents an incorrect price tag from appearing when a provider is offline, has no stock, rate-limits the app, or returns an item that does not exactly match the search.
 
-def fuzzy_choice 
->  designed to make user input more flexible and forgiving, especially when users might mistype or slightly misspell their choice.
-> prompt: a string to show the user.
-> options: a list of choices (e.g. skin names, categories).
-If input is a number (e.g. "2"), convert it to an index and return the selected option.
-If input is a text string, use fuzzy matching (from difflib.get_close_matches) to find the closest match in the options list.
-So even if the user types "awpp" instead of "AWP", it will still work.
+## Marketplace sources
 
-def chatbot_interface()
-> Main function to run the chatbot interface
+| Marketplace | Data used | Native currency | Why it is useful |
+| --- | --- | --- | --- |
+| Steam Community Market | Public price summary | SGD | Direct Steam reference price when available |
+| Skinport | Public items catalog | USD | Established marketplace catalog with current listings |
+| 49Skins | Public active-stock snapshot | EUR | Live stock and cheapest active listing price |
+| SkinCash | Public price feed | USD | Extra no-login fallback for items missing from other feeds |
+
+Skinport, 49Skins, and SkinCash expose public structured data without a login. The CS2 item catalog used for matching is separate from pricing: it validates what the item is, but never supplies a price. See [Skinport docs](https://docs.skinport.com/items), [49Skins docs](https://49skins.com/public-price-api), [SkinCash docs](https://skincash.gg/en/developers), and the [ByMykel CS2 item catalog](https://github.com/ByMykel/CSGO-API).
+
+## Search examples
+
+| Type this | Resolves to |
+| --- | --- |
+| `ak neon rider ft` | `AK-47 | Neon Rider (Field-Tested)` |
+| `ak stat-track neon rider mw` | `StatTrak(TM) AK-47 | Neon Rider (Minimal Wear)` |
+| `karambit fade fn` | `Star Karambit | Fade (Factory New)` |
+| `sport gloves vice ft` | `Star Sport Gloves | Vice (Field-Tested)` |
+| `ak stat-track wild lotus mw` | No valid StatTrak variant; suggests standard Wild Lotus |
+
+## Run locally
+
+```powershell
+cd "C:\Users\65976\Desktop\cs_steambot\cs_steambot"
+.\.venv\Scripts\Activate.ps1
+python -m pip install -r requirements.txt
+python app.py
+```
+
+Open [http://127.0.0.1:5000](http://127.0.0.1:5000) in a browser.
+
+To create the environment for the first time:
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install -r requirements.txt
+```
+
+## Project structure
+
+```text
+app.py                 Flask routes and Server-Sent Events progress stream
+pricing.py             Item matching, provider checks, FX estimates, safety rules
+templates/index.html   Search form, loading state, terminal log, price cards
+static/style.css       Neon blue / pink / purple visual design
+static/market-hero.png Website banner artwork
+assets/readme-hero.png README cover artwork
+requirements.txt       Python dependencies
+```
+
+## Important notes
+
+- This is a comparison tool, not a trading bot or financial recommendation.
+- Marketplace availability, fees, listing prices, and exchange rates change constantly.
+- An SGD figure beside a USD or EUR price is an estimate. The original marketplace price is always the source-of-truth value.
+- Always open the linked marketplace and verify the final listing before buying.
