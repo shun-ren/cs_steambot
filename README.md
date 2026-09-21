@@ -9,6 +9,12 @@
 </p>
 
 <p align="center">
+  <a href="https://shun-ren.github.io/cs_steambot/">
+    <img src="https://img.shields.io/badge/Check%20it%20out-Live%20demo-9636c9?style=for-the-badge" alt="Check out the live demo">
+  </a>
+</p>
+
+<p align="center">
   <img src="https://img.shields.io/badge/Python-3.9%2B-3776AB?logo=python&logoColor=white" alt="Python 3.9+">
   <img src="https://img.shields.io/badge/Flask-3.1-000000?logo=flask&logoColor=white" alt="Flask">
   <img src="https://img.shields.io/badge/CS2-natural--language%20search-bb35d5" alt="Natural language search">
